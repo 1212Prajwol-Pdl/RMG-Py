@@ -14,6 +14,14 @@ Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX
 
    **When prompted to append Anaconda to your PATH, select or type Yes**.  Install the Anaconda folder inside your home directory (typically ``/home/YourUsername/`` in Linux and ``/Users/YourUsername`` in Mac). When prompted, you do not need to install Microsoft VSCode (but feel free to if you are looking for a lightweight IDE).
 
+#. For MacOS users only, download and install the latest macOS julia from here: <https://julialang.org/downloads/>. Then add julia to PATH by running:
+
+    rm -f /usr/local/bin/julia
+    ln -s /Applications/Julia-\*/Contents/Resources/julia/bin/julia /usr/local/bin/julia
+
+Note that this julia install will not respect conda environmental boundaries this means only one conda environment can be linked to it at a time.
+For linux users julia will be installed automatically.
+
 #. Install both RMG and the RMG-database binaries through the terminal.   Dependencies will be installed automatically. It is safest to make a new conda environment for RMG and its dependencies. Type the following command into the terminal to create the new environment named 'rmg_env' containing the latest stable version of the RMG program and its database. ::
 
     conda create -c defaults -c rmg -c rdkit -c cantera -c pytorch -c conda-forge --name rmg_env rmg rmgdatabase
@@ -21,7 +29,17 @@ Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX
    Whenever you wish to use it you must first activate the environment::
     
     source activate rmg_env
-    
+
+#. Install and Link Julia dependencies ::
+
+    python -c "import pyrms; pyrms.install()"
+    ln -sfn $(which python-jl) $(which python)
+       
+    Note that this links your python to python-jl enabling calls to Julia through pyjulia. Occasionally programs will 
+    interact with python-jl differently than the default python. If this occurs for you we recommend doing that operation
+    in a different conda environment. However, if convenient you can undo this linking by replacing python-jl with 
+    python3 in the second command above. Just make sure to rerun the linking command once you are done. 
+       
 #. Optional: If you wish to use the :ref:`QMTP interface <qm>` with `MOPAC <http://openmopac.net/>`_ to run quantum mechanical calculations for improved thermochemistry estimates of cyclic species, please obtain a legal license through the `MOPAC License Request Form <http://openmopac.net/form.php>`_.  Once you have it, type the following into your terminal ::
     
     mopac password_string_here
