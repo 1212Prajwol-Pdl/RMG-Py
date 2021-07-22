@@ -3016,14 +3016,14 @@ class KineticsFamily(Database):
         else:
             raise DatabaseError('Could not find training depository in family {0}.'.format(self.label))
 
-    def add_entry(self, parent, grp, name):
+    def add_entry(self, parent, grp, name, facet=None):
         """
         Adds a group entry with parent parent
         group structure grp
         and group name name
         """
         ind = len(self.groups.entries) - 1
-        entry = Entry(index=ind, label=name, item=grp, parent=parent)
+        entry = Entry(index=ind, label=name, item=grp, parent=parent, facet=facet)
         self.groups.entries[name] = entry
         self.rules.entries[name] = []
         if entry.parent:
@@ -4396,9 +4396,9 @@ class KineticsFamily(Database):
                 else:
                     mol = mol.merge(r.molecule[0])
             try:
-                flag = not self.is_entry_match(mol, root, resonance=True)
+                flag = not self.is_entry_match(mol, root, resonance=True, metal=rxn.metal, facet=rxn.facet, site=rxn.site)
             except:
-                flag = not self.is_entry_match(mol, root, resonance=False)
+                flag = not self.is_entry_match(mol, root, resonance=False, metal=rxn.metal, facet=rxn.facet, site=rxn.site)
 
             if flag:
                 logging.error(root.item.to_adjacency_list())
@@ -4415,7 +4415,7 @@ class KineticsFamily(Database):
 
             while entry.children != []:
                 for child in entry.children:
-                    if self.is_entry_match(mol, child, resonance=False):
+                    if self.is_entry_match(mol, child, resonance=False, metal=rxn.metal, facet=rxn.facet, site=rxn.site):
                         entry = child
                         rxn_lists[child.label].append(rxn)
                         break
@@ -4433,10 +4433,21 @@ class KineticsFamily(Database):
 
         return rxn_lists
 
-    def is_entry_match(self, mol, entry, resonance=True):
+    def is_entry_match(self, mol, entry, resonance=True, metal=None, facet=None, site=None):
         """
         determines if the labeled molecule object of reactants matches the entry entry
         """
+
+        if entry.metal:
+            if metal != entry.metal:
+                return False
+        if entry.facet:
+            if facet != entry.facet:
+                return False
+        if entry.site:
+            if site != entry.site:
+                return False
+
         if isinstance(entry.item, Group):
             if resonance:
                 structs = mol.generate_resonance_structures()
@@ -4456,7 +4467,7 @@ class KineticsFamily(Database):
                 else:
                     mol = mol.merge(r.molecule[0])
 
-            if not self.is_entry_match(mol, node, resonance=False):
+            if not self.is_entry_match(mol, node, resonance=False, metal=rxn.metal, facet=rxn.facet, site=rxn.site):
                 return False
 
         return True
